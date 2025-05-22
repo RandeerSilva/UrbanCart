@@ -32,13 +32,13 @@ To enable effective unit testing, external dependencies are abstracted through i
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/effective-tdd-csharp.git
+   git clone https://github.com/RandeerSilva/UrbanCart.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd effective-tdd-csharp
+   cd UrbanCart
    ```
 
 3. Restore dependencies:
