@@ -1,9 +1,11 @@
-﻿using AccessControl.Application.Features.Authentication;
+﻿using System.DirectoryServices.Protocols;
+using AccessControl.Application.Features.Authentication;
 using AccessControl.Application.Persistence;
 using AccessControl.Application.ViewModels;
 using AccessControl.Domain.Entities;
 using AutoMapper;
 using Moq;
+using System.Reflection.Metadata;
 
 namespace AccessControl.Test.BusinessTest
 {
@@ -118,6 +120,40 @@ namespace AccessControl.Test.BusinessTest
             Assert.IsFalse(result);
             _userRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
             _userRepositoryMock.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Test]
+        public void IsLoginSuccessfulAsync_LDAPExceptionThrown_ThrowsLDAPException()
+        {
+            // Arrange
+            var ldapHost = "ldap://test-server";
+            var domain = "test-domain";
+            var username = "testuser";
+            var password = "testpassword";
+            _contextWrapper
+                .Setup(x => x.ValidateCredentialsAndGetUserDetailsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new LdapException("LDAP error"));
+
+            // Act & Assert
+            Assert.ThrowsAsync<LdapException>(async () =>
+                await _authenticationHandler.IsLoginSuccessfulAsync(ldapHost, domain, username, password));
+        }
+
+        [Test]
+        public void IsLoginSuccessfulAsync_ExceptionThrown_ThrowsException()
+        {
+            // Arrange
+            var ldapHost = "ldap://test-server";
+            var domain = "test-domain";
+            var username = "testuser";
+            var password = "testpassword";
+            _contextWrapper
+                .Setup(x => x.ValidateCredentialsAndGetUserDetailsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new Exception("LDAP error"));
+
+            // Act & Assert
+            Assert.ThrowsAsync<Exception>(async () =>
+                await _authenticationHandler.IsLoginSuccessfulAsync(ldapHost, domain, username, password));
         }
 
     }

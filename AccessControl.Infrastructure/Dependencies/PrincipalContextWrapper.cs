@@ -1,5 +1,4 @@
-﻿using System;
-using System.DirectoryServices.Protocols;
+﻿using System.DirectoryServices.Protocols;
 using System.Net;
 using AccessControl.Application.Persistence;
 using AccessControl.Application.ViewModels;
@@ -48,12 +47,11 @@ namespace AccessControl.Infrastructure.Dependencies
                 }
                 catch (LdapException)
                 {
-                    return new UserDetailsVM(); // Invalid credentials or connection issue
+                    throw new LdapException("Invalid credentials or connection issue.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error: {ex.Message}");
-                    return new UserDetailsVM();
+                    throw new Exception("Unexpected error occurred while validating credentials and retrieving user details.");
                 }
             });
         }

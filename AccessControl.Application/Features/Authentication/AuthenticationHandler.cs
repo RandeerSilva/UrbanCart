@@ -19,19 +19,29 @@ namespace AccessControl.Application.Features.Authentication
 
         public async Task<bool> IsLoginSuccessfulAsync(string ldapHost, string domain, string username, string password)
         {
-            var response = await _principalContextWrapper.ValidateCredentialsAndGetUserDetailsAsync(ldapHost, domain, username, password);
-
-            if (response is not { IsAuthenticated: true, UserName: not null }) return false;
-
-            var userDetails = await _userRepository.GetByUserNameAsync(response.UserName);
-            var user = _mapper.Map<User>(response);
-            if (userDetails != null)
+            try
             {
-                await _userRepository.UpdateAsync(user);
+
+                var response = await _principalContextWrapper.ValidateCredentialsAndGetUserDetailsAsync(ldapHost, domain, username, password);
+
+                if (response is not { IsAuthenticated: true, UserName: not null }) return false;
+
+                var userDetails = await _userRepository.GetByUserNameAsync(response.UserName);
+                var user = _mapper.Map<User>(response);
+                if (userDetails != null)
+                {
+                    await _userRepository.UpdateAsync(user);
+                }
+                else
+                    await _userRepository.AddUserAsync(user);
+                return true;
+
             }
-            else
-                await _userRepository.AddUserAsync(user);
-            return true;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
 
